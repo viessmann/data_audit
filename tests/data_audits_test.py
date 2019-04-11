@@ -5,7 +5,7 @@ Created on Mon Mar 11 13:20:11 2019
 @author: strq
 """
 import pytest
-from pythena.data_audits.data_audits import *
+from data_audits.data_audits import *
 
 import numpy as np
 import pandas as pd
@@ -207,7 +207,7 @@ class TestDataAudits(object):
                                cluster_std=0.60, random_state=0)
         dfX = pd.DataFrame(X)
         #dfY = pd.DataFrame(y_true)
-        kMeans(dfX,2,False)
+        kMeans(dfX,2)
     
     def test_spectral_clustering(self):
         X, y_true = make_blobs(n_samples=300, centers=4,
