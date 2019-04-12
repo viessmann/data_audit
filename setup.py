@@ -7,6 +7,7 @@ setup(name='data_audit',
                     'Source': 'https://github.com/viessmann/data_audit'},
       description='Viessmann Data Audit',
       long_description=open('readme_pypi.rst').read(),
+	  download_url='https://github.com/viessmann/data_audit/archive/v0.1.1.tar.gz',
       classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
