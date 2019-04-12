@@ -5,7 +5,7 @@ Created on Mon Mar 11 13:20:11 2019
 @author: strq
 """
 import pytest
-import data_audit
+import viessmann_data_audit as vda
 
 import numpy as np
 import pandas as pd
@@ -130,80 +130,80 @@ class TestDataAudits(object):
     """
       
     def test_data_type_mapper_numeric(self):
-        assert data_audit.data_type_mapper("float64") == "Numeric"
+        assert vda.data_type_mapper("float64") == "Numeric"
     
     def test_data_type_mapper_undefined(self):
-        assert data_audit.data_type_mapper("timedelta[ns]") == "Undefined"
+        assert vda.data_type_mapper("timedelta[ns]") == "Undefined"
     
     def test_data_type_mapper_datetime(self):
-        assert data_audit.data_type_mapper("datetime64[ns]") == "Datetime"
+        assert vda.data_type_mapper("datetime64[ns]") == "Datetime"
     
     def test_data_type_mapper_name(self):
-        assert data_audit.data_type_mapper("category") == "Name"
+        assert vda.data_type_mapper("category") == "Name"
         
     def test_data_description(self):
         dfData = create_test_data()
-        dfResults = data_audit.data_description(dfData)
+        dfResults = vda.data_description(dfData)
         lstCompare = ['Datetime', 'Numeric', 'Numeric', 'Name', 'Name', 
                       'Name', 'Name', 'Numeric']
         assert list(dfResults["Data_Type"]) == lstCompare
         
     def test_classify_data_type_logic(self):
         dfData = create_test_data()
-        assert data_audit.classify_data_type_logic(dfData["id"]) == "num"
+        assert vda.classify_data_type_logic(dfData["id"]) == "num"
         
     def test_proportion_of_missing_values(self):
         dfData = create_test_data()
-        serResults = data_audit.proportion_of_missing_values(dfData)     
+        serResults = vda.proportion_of_missing_values(dfData)     
         assert serResults[5] == 0.4
 
     def test_proportion_of_invalid_values_All_Valid(self):
         dfData = create_test_data()
         dctValues = create_dctValuesAllValid()
-        dfResults = data_audit.proportion_of_invalid_values(dfData, dctValues)
+        dfResults = vda.proportion_of_invalid_values(dfData, dctValues)
         assert(dfResults.loc[1, "Proportion_Invalid_Values"] == 0.4)
   
     def test_proportion_of_invalid_values_None_Valid(self):
         dfData = create_test_data()    
         dctValues = create_dctValuesNoneValid()
-        dfResults = data_audit.proportion_of_invalid_values(dfData, dctValues)
+        dfResults = vda.proportion_of_invalid_values(dfData, dctValues)
         assert(dfResults.loc[1, "Proportion_Invalid_Values"] == 1)
 
     def test_proportion_of_outliers(self):
         dfData = create_test_data()
         dctOutliers = create_dctOutliers()
-        dfResults = data_audit.proportion_of_outliers(dfData, dctOutliers)
+        dfResults = vda.proportion_of_outliers(dfData, dctOutliers)
         assert(dfResults.loc[2, "Proportion_Outliers"] == 0.2)
     
     def test_wrong_types_list_proportion_of_outliers(self):
         with pytest.raises(AssertionError):
             dfData = create_test_data()
             dctOutliers = create_dctWrongOutliersDct()
-            data_audit.proportion_of_outliers(dfData, dctOutliers)
+            vda.proportion_of_outliers(dfData, dctOutliers)
     
     def test_value_range_of_features(self):
         dfData = create_test_data()
-        serResults = data_audit.value_range_of_features(dfData)
+        serResults = vda.value_range_of_features(dfData)
         assert(serResults[0] == [0,4])
 
     def test_number_of_unique_values(self):
         dfData = create_test_data()
-        serResults = data_audit.number_of_unique_values(dfData)
+        serResults = vda.number_of_unique_values(dfData)
         assert(serResults[0] == 5)
 
     def test_granularity_of_timestamp_feature(self):
         dfData = create_test_data()
-        dfResults = data_audit.granularity_of_timestamp_feature(dfData, ["D"])
+        dfResults = vda.granularity_of_timestamp_feature(dfData, ["D"])
         assert(dfResults.loc[0, "Maximum"] == 731.0409722222222)
         
     def test_granularity_of_timestamp_feature_wrong_timeConversion(self):
         with pytest.raises(TypeError):
             dfData = create_test_data()
-            data_audit.granularity_of_timestamp_feature(dfData, "E")
+            vda.granularity_of_timestamp_feature(dfData, "E")
 
     def test_convert_time_column_and_granularity_of_timestamp(self):
         dfData = create_test_data()
-        dfResults = data_audit\
+        dfResults = vda\
         .convert_time_column_and_granularity_of_timestamp(dfData, 
                                                           ["TimeStamp"])
         assert round(dfResults["Mean"].iloc[0], 2) == 198.01
@@ -213,7 +213,7 @@ class TestDataAudits(object):
                                cluster_std=0.60, random_state=0)
         dfX = pd.DataFrame(X)
         #dfY = pd.DataFrame(y_true)
-        a, b = data_audit.proj_kMeans(dfX, 4, False)
+        a, b = vda.proj_kMeans(dfX, 4, False)
         assert a == 0.6366971747472904
     
     def test_ica_proj_kMeans(self):
@@ -221,7 +221,7 @@ class TestDataAudits(object):
                                cluster_std=0.60, random_state=0)
         dfX = pd.DataFrame(X)
         #dfY = pd.DataFrame(y_true)
-        a, b = data_audit.proj_kMeans(dfX, 4, False, method='ica')
+        a, b = vda.proj_kMeans(dfX, 4, False, method='ica')
         assert round(a, 3) == 0.612
         
     def test_kMeans(self):
@@ -229,7 +229,7 @@ class TestDataAudits(object):
                                cluster_std=0.60, random_state=0)
         dfX = pd.DataFrame(X)
         #dfY = pd.DataFrame(y_true)
-        a, b = data_audit.kMeans(dfX, 4)
+        a, b = vda.kMeans(dfX, 4)
         assert a == 0.6602520998786426
     
     def test_spectral_clustering(self):
@@ -237,7 +237,7 @@ class TestDataAudits(object):
                                cluster_std=0.60, random_state=0)
         dfX = pd.DataFrame(X)
         #dfY = pd.DataFrame(y_true)
-        a, b = data_audit.spectral_clustering(dfX, 4)
+        a, b = vda.spectral_clustering(dfX, 4)
         assert a == 0.6602520998786426
         
     def test_pca_proj_spectral_clustering(self):
@@ -245,7 +245,7 @@ class TestDataAudits(object):
                                cluster_std=0.60, random_state=0)
         dfX = pd.DataFrame(X)
         #dfY = pd.DataFrame(y_true)
-        a, b = data_audit.proj_spectral_clustering(dfX, 4)
+        a, b = vda.proj_spectral_clustering(dfX, 4)
         assert a == 0.6366971747472904
     
     def test_ica_proj_spectral_clustering(self):
@@ -253,5 +253,5 @@ class TestDataAudits(object):
                                cluster_std=0.60, random_state=0)
         dfX = pd.DataFrame(X)
         #dfY = pd.DataFrame(y_true)
-        a, b = data_audit.proj_spectral_clustering(dfX, 4, 'ica')
+        a, b = vda.proj_spectral_clustering(dfX, 4, 'ica')
         assert round(a, 3) == 0.612

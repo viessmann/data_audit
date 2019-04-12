@@ -1,4 +1,4 @@
-Data Audit
-==========
+Viessmann Data Audit
+====================
 
-Functions for explorative data analysis used for e.g. data audits.
+Functions for explorative data analysis used for data audits at Viessmann.
