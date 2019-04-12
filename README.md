@@ -1,4 +1,6 @@
-# Viessmann Data Audits
+# Data Audit
+
+Functions for explorative data analysis used for e.g. data audits
 
 ## Dependencies
 - [pandas](https://pandas.pydata.org): 0.22.0 or higher

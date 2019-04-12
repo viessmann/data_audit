@@ -331,7 +331,8 @@ def proportion_of_invalid_values(dfData, dctValidValues):
     #---------
     dfData    pandas.DataFrame containing data
     
-    dctValidValues    dictionary containing characteristic lists for each feature
+    dctValidValues    dictionary containing characteristic lists for each 
+                      feature
     
     Returns
     #------
@@ -363,7 +364,8 @@ def proportion_of_invalid_values(dfData, dctValidValues):
     else:
         raise ValueError("No correct Dateformat given")
     # Normalize
-    dfDesc["Proportion_Invalid_Values"] = 1 - dfDesc["Proportion_Invalid_Values"]/len(dfData)
+    dfDesc["Proportion_Invalid_Values"] = 1 \
+    - dfDesc["Proportion_Invalid_Values"] / len(dfData)
     return dfDesc
 
 def outlier_helper(dfData, dctOutliers):
@@ -704,7 +706,7 @@ def granularity_of_timestamp_helper(dfData, timeConversion):
     #----------
     Computes timedelta via shift of one column in datetime format
     """
-    dfA =(dfData - dfData.shift()).fillna(0)/ np.timedelta64(1, timeConversion)
+    dfA = dfData.diff().dropna() / np.timedelta64(1, timeConversion)
     arrA = np.array(dfA)
     intMean = arrA.mean()
     intMin = arrA.min()
@@ -735,7 +737,6 @@ def granularity_of_timestamp_helper(dfData, timeConversion):
 def convert_time_column_and_granularity_of_timestamp(dfData,
                         lstCols,
                         timeConversion = "D",
-                        #fmtTime,
                         timMin = pd.Timestamp('1970-01-01 00:00:00')):
     """
     Parameters
@@ -772,7 +773,7 @@ def convert_time_column_and_granularity_of_timestamp(dfData,
         dfTimeData = dfTimeData.sort_values(by = j)
         # filter downwards by timMin
         dfTimeData = dfTimeData[dfTimeData[j] > timMin]
-        # us only the column
+        # use only the column
         dfCol = dfTimeData[j]
         # compute time gaps
         dfRes_j = granularity_of_timestamp_feature(dfCol, timeConversion)
@@ -903,7 +904,8 @@ def distribution_of_feature_histogram(dfData,
     Uses pandas builtin function for computing histogram
     """
     if isinstance(dfData, pd.Series):
-        histogram_barplot(dfData, bins, tplFigSize, intFontSize, strName, boolSave)
+        histogram_barplot(dfData, bins, tplFigSize, intFontSize, strName, 
+                          boolSave)
     elif isinstance(dfData, pd.DataFrame):
         for j in dfData.columns:
             histogram_barplot(dfData[j], bins, tplFigSize, intFontSize,
@@ -1006,7 +1008,6 @@ def density_plot(dfData, tplFigSize, intFontSize, strName, boolSave):
     """
     lstNonNumCatDT = ["object", "datetime64[ns]", "bool", "timedelta[ns]",
                       "category"]
-    intNumRows = len(dfData)
     if(dfData.dtypes.name not in lstNonNumCatDT):
         fig = plt.figure(figsize = tplFigSize)
         ax = plt.gca()
@@ -1017,7 +1018,8 @@ def density_plot(dfData, tplFigSize, intFontSize, strName, boolSave):
         plt.ylabel('Dichte der Wertigkeiten')
         plt.grid(True)
         plt.rcParams.update({'font.size': intFontSize})
-        dfData.plot.density(ind = intNumRows)
+        sns.distplot(dfData, hist=True, kde=True, color = 'darkblue', 
+                     hist_kws={'edgecolor':'black'}, kde_kws={'linewidth': 4})
         if boolSave == True:
             fig.savefig(strName + "_Density_Plot_" + dfData.name + ".pdf")
     return
@@ -1058,7 +1060,8 @@ def distribution_of_feature_density_plot(dfData,
 #-------------#
     
 
-def pca(dfData, n_components = 2, whiten = False, boolPlot = False, boolVerbose = False):
+def pca(dfData, n_components = 2, whiten = False, boolPlot = False, 
+        boolVerbose = False):
     """
     Parameters
     #---------
@@ -1082,6 +1085,8 @@ def pca(dfData, n_components = 2, whiten = False, boolPlot = False, boolVerbose 
     """
     dfNum = get_numericals(dfData)
     dfNum = dfNum.dropna(axis = 1)
+    min_max_scaler = MinMaxScaler()
+    dfNum = min_max_scaler.fit_transform(dfNum)
     #PCA
     pca = skd.PCA(n_components, whiten)
     pca.fit(dfNum)
@@ -1121,6 +1126,8 @@ def ica(dfData, n_components = 2, boolPlot = False):
     """
     dfNum = get_numericals(dfData)
     dfNum = dfNum.dropna(axis = 1)
+    min_max_scaler = MinMaxScaler()
+    dfNum = min_max_scaler.fit_transform(dfNum)
     ica = skd.FastICA(n_components)
     ica.fit(dfNum)
     S_ = ica.fit_transform(dfNum)
@@ -1256,87 +1263,3 @@ def spectral_clustering(dfData, n_clusters = 2):
     labels = model.fit_predict(dfNum)
     intScore = metrics.silhouette_score(dfNum, labels, metric='euclidean')
     return intScore, labels
-
-
-if __name__ == "__main__":
-    """
-    Examples for running methods
-    """
-    # Unique Numbers
-    arrNumbers = np.arange(0,5)
-    # Numbers with Nan
-    arrNanNumbers = np.array([1, np.nan, 2, np.nan, 3])
-    # Non unique objects
-    arrObj = ["A", "A", "B", "C", "D"]
-    # Categorical
-    # Categorical with Nan
-    serCat = pd.Series(["a", "b", "c", "b", "a"])
-    serNanCat = pd.Series(["b", "a", "c", "e", "f"])
-    cat_type = pd.api.types.CategoricalDtype(
-            categories=["a", "b", "c", "d"], ordered=True)
-    serCategorical = serCat.astype(cat_type)
-    serNanCategorical = serNanCat.astype(cat_type)
-    
-    serNoCat = pd.Series(["a", "b", "c", "b", "a"])
-    cat_no_order_type = pd.api.types.CategoricalDtype(
-            categories=["a", "b", "c", "d"], ordered=False)
-    serNoOrderCategorical = serNoCat.astype(cat_no_order_type)
-    # Outlier
-    arrOutlier = np.array([1,1,1,1,10])
-    # dictionary for putting synthetic data in shape for pd.DataFrame
-    dictionary = {"id": arrNumbers,
-                  "nanNumbers": arrNanNumbers,
-                  "nonUniqueObjects": arrObj,
-                  "categorical": serCategorical,
-                  "nanCategorical": serNanCategorical,
-                  "noOrderCategorical": serNoOrderCategorical,
-                  "sigOutlier": arrOutlier}
-    # Create pd.DataFrame
-    dfData = pd.DataFrame(dictionary)
-    # Add time data
-    dfData.insert(0,'TimeStamp',pd.datetime.now().replace(microsecond=0))
-    dfData.loc[0,"TimeStamp"] = pd.Timestamp('2018-12-01 08:00:00.000000', tz=None)
-    dfData.loc[1,"TimeStamp"] = pd.Timestamp('2018-12-01 08:00:01.000000', tz=None)
-    dfData.loc[2,"TimeStamp"] = pd.Timestamp('2019-01-31 08:00:00.000000', tz=None)
-    dfData.loc[3,"TimeStamp"] = pd.Timestamp('2019-01-31 08:01:00.000000', tz=None)
-    dfData.loc[4,"TimeStamp"] = pd.Timestamp('2021-01-31 09:00:00.000000', tz=None)
-    # try big numerical data
-    dfBigData = pd.DataFrame(np.random.randn(2500,40))
-    
-    # example for list containing outliers
-    lstOutlierDefinition = [[0,4],
-                            [1,3],
-                            [1,1]
-                            ]
-    
-    dctOutliers = dict()
-    dctOutliers.update({"id":[0,4]})
-    dctOutliers.update({"nanNumbers":[1,3]})
-    dctOutliers.update({"sigOutlier":[1,1]})
-    
-    dctValuesAllValid = dict()
-    dctValuesAllValid.update({"id":[0,4]})
-    dctValuesAllValid.update({"nanNumbers":[1,3]})
-    dctValuesAllValid.update({"nonUniqueObjects":["A", "B", "C", "D"]})
-    dctValuesAllValid.update({"categorical":["a", "d"]})
-    dctValuesAllValid.update({"nanCategorical":["a", "d"]})
-    dctValuesAllValid.update({"noOrderCategorical":["a", "b", "c", "d"]})
-    dctValuesAllValid.update({"sigOutlier":[1,10]})
-    
-    dctValuesNoneValid = dict()
-    dctValuesNoneValid.update({"id":[5,6]})
-    dctValuesNoneValid.update({"nanNumbers":[4,5]})
-    dctValuesNoneValid.update({"nonUniqueObjects":[]})
-    dctValuesNoneValid.update({"categorical":[]})
-    dctValuesNoneValid.update({"nanCategorical":[]})
-    dctValuesNoneValid.update({"noOrderCategorical":[]})
-    dctValuesNoneValid.update({"sigOutlier":[2,4]})
-    
-    dctWrongSize = dict()
-    dctWrongSize.update({"id":[5,6]})
-
-#
-#
-#
-#
-#

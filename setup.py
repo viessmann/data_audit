@@ -1,25 +1,23 @@
 from setuptools import setup, find_packages
 
 
-def readme():
-    with open('README.md') as f:
-        return f.read()
-
-
-setup(name='data_audits',
-      version='0.1.0',
-      description='Viessmann Data Audits',
-      long_description=readme(),
+setup(name='data_audit',
+      version='0.1.1',
+	  project_urls={'Viessmann': 'https://www.linkedin.com/company/viessmann/', 
+                    'Source': 'https://github.com/viessmann/data_audit'}
+      description='Viessmann Data Audit',
+      long_description=open('readme_pypi.rst').read(,
       classifiers=[
         'Development Status :: 3 - Alpha',
-        'License :: Other/Proprietary License',
+        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.6',
+		'Programming Language :: Python :: 3.7',
         'Topic :: Scientific/Engineering',
       ],
       keywords='data science',
       author='GhlT',
       author_email='ghlt@viessmann.com',
-      license='Other/Proprietary License',
+      license='MIT License',
       packages=find_packages(),
       install_requires=[
           'pandas>=0.22',

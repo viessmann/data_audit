@@ -2,7 +2,7 @@
 verbosity=1
 detailed-errors=1
 with-coverage=1
-cover-package=data_audits
+cover-package=data_audit
 all-modules=1
 processes=-1
 logging-level=CRITICAL

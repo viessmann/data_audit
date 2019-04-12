@@ -5,7 +5,7 @@ Created on Mon Mar 11 13:20:11 2019
 @author: strq
 """
 import pytest
-from data_audits.data_audits import *
+import data_audit
 
 import numpy as np
 import pandas as pd
@@ -129,129 +129,129 @@ class TestDataAudits(object):
                                             boolDropOutliers = False)
     """
       
-    def test_data_type_mapper(self):
-        dfData = create_test_data()
-        serResults = data_type_mapper("Object")
+    def test_data_type_mapper_numeric(self):
+        assert data_audit.data_type_mapper("float64") == "Numeric"
+    
+    def test_data_type_mapper_undefined(self):
+        assert data_audit.data_type_mapper("timedelta[ns]") == "Undefined"
+    
+    def test_data_type_mapper_datetime(self):
+        assert data_audit.data_type_mapper("datetime64[ns]") == "Datetime"
+    
+    def test_data_type_mapper_name(self):
+        assert data_audit.data_type_mapper("category") == "Name"
         
     def test_data_description(self):
         dfData = create_test_data()
-        dfResults = data_description(dfData)
+        dfResults = data_audit.data_description(dfData)
+        lstCompare = ['Datetime', 'Numeric', 'Numeric', 'Name', 'Name', 
+                      'Name', 'Name', 'Numeric']
+        assert list(dfResults["Data_Type"]) == lstCompare
         
     def test_classify_data_type_logic(self):
         dfData = create_test_data()
-        dfResults = classify_data_type_logic(dfData["id"])
+        assert data_audit.classify_data_type_logic(dfData["id"]) == "num"
         
     def test_proportion_of_missing_values(self):
         dfData = create_test_data()
-        serResults = proportion_of_missing_values(dfData)     
+        serResults = data_audit.proportion_of_missing_values(dfData)     
         assert serResults[5] == 0.4
 
     def test_proportion_of_invalid_values_All_Valid(self):
         dfData = create_test_data()
         dctValues = create_dctValuesAllValid()
-        dfResults = proportion_of_invalid_values(dfData, dctValues)
+        dfResults = data_audit.proportion_of_invalid_values(dfData, dctValues)
         assert(dfResults.loc[1, "Proportion_Invalid_Values"] == 0.4)
   
     def test_proportion_of_invalid_values_None_Valid(self):
         dfData = create_test_data()    
         dctValues = create_dctValuesNoneValid()
-        dfResults = proportion_of_invalid_values(dfData, dctValues)
+        dfResults = data_audit.proportion_of_invalid_values(dfData, dctValues)
         assert(dfResults.loc[1, "Proportion_Invalid_Values"] == 1)
 
     def test_proportion_of_outliers(self):
         dfData = create_test_data()
         dctOutliers = create_dctOutliers()
-        dfResults = proportion_of_outliers(dfData, dctOutliers)
+        dfResults = data_audit.proportion_of_outliers(dfData, dctOutliers)
         assert(dfResults.loc[2, "Proportion_Outliers"] == 0.2)
     
     def test_wrong_types_list_proportion_of_outliers(self):
         with pytest.raises(AssertionError):
             dfData = create_test_data()
             dctOutliers = create_dctWrongOutliersDct()
-            proportion_of_outliers(dfData, dctOutliers)
+            data_audit.proportion_of_outliers(dfData, dctOutliers)
     
     def test_value_range_of_features(self):
         dfData = create_test_data()
-        serResults = value_range_of_features(dfData)
+        serResults = data_audit.value_range_of_features(dfData)
         assert(serResults[0] == [0,4])
 
     def test_number_of_unique_values(self):
         dfData = create_test_data()
-        serResults = number_of_unique_values(dfData)
+        serResults = data_audit.number_of_unique_values(dfData)
         assert(serResults[0] == 5)
 
     def test_granularity_of_timestamp_feature(self):
         dfData = create_test_data()
-        dfResults = granularity_of_timestamp_feature(dfData, ["D"])
+        dfResults = data_audit.granularity_of_timestamp_feature(dfData, ["D"])
         assert(dfResults.loc[0, "Maximum"] == 731.0409722222222)
         
     def test_granularity_of_timestamp_feature_wrong_timeConversion(self):
         with pytest.raises(TypeError):
             dfData = create_test_data()
-            granularity_of_timestamp_feature(dfData, "E")
+            data_audit.granularity_of_timestamp_feature(dfData, "E")
 
     def test_convert_time_column_and_granularity_of_timestamp(self):
         dfData = create_test_data()
-        dfResults = convert_time_column_and_granularity_of_timestamp(
-                dfData, ["TimeStamp"])
+        dfResults = data_audit\
+        .convert_time_column_and_granularity_of_timestamp(dfData, 
+                                                          ["TimeStamp"])
+        assert round(dfResults["Mean"].iloc[0], 2) == 198.01
         
-    def test_proj_kMeans(self):
+    def test_pca_proj_kMeans(self):
         X, y_true = make_blobs(n_samples=300, centers=4,
                                cluster_std=0.60, random_state=0)
         dfX = pd.DataFrame(X)
         #dfY = pd.DataFrame(y_true)
-        proj_kMeans(dfX,2,False)
+        a, b = data_audit.proj_kMeans(dfX, 4, False)
+        assert a == 0.6366971747472904
+    
+    def test_ica_proj_kMeans(self):
+        X, y_true = make_blobs(n_samples=300, centers=4,
+                               cluster_std=0.60, random_state=0)
+        dfX = pd.DataFrame(X)
+        #dfY = pd.DataFrame(y_true)
+        a, b = data_audit.proj_kMeans(dfX, 4, False, method='ica')
+        assert round(a, 3) == 0.612
         
     def test_kMeans(self):
         X, y_true = make_blobs(n_samples=300, centers=4,
                                cluster_std=0.60, random_state=0)
         dfX = pd.DataFrame(X)
         #dfY = pd.DataFrame(y_true)
-        kMeans(dfX,2)
+        a, b = data_audit.kMeans(dfX, 4)
+        assert a == 0.6602520998786426
     
     def test_spectral_clustering(self):
         X, y_true = make_blobs(n_samples=300, centers=4,
                                cluster_std=0.60, random_state=0)
         dfX = pd.DataFrame(X)
         #dfY = pd.DataFrame(y_true)
-        spectral_clustering(dfX,2)
-"""        
-    def test_wrong_statistical_moments_of_features(self):
-        dfData = create_test_data()
-        dfResult = statistical_moments_of_features(dfData)
+        a, b = data_audit.spectral_clustering(dfX, 4)
+        assert a == 0.6602520998786426
         
-    def test_wrong_create_a_correlation_matrix(self):
-        dfData = create_test_data()
-        dfResult = create_a_correlation_matrix(dfData)
-        
-    def test_visualize_a_correlation_matrix_heatmap(self):
-        dfData = create_test_data()
-        dfResult = visualize_a_correlation_matrix_heatmap(dfData)
-        
-    def test_wrong_visualize_a_correlation_matrix_scatter_plot_matrix(self):
-        dfData = create_test_data()
-        dfResult = visualize_a_correlation_matrix_scatter_plot_matrix(dfData)
-        
-    def test_wrong_cross_correlation(self):
-        dfData = create_test_data()
-        dfResult = cross_correlation(dfData)
-        
-    def test_wrong_distribution_of_feature_histogram(self):
-        dfData = create_test_data()
-        dfResult = cross_correlation(dfData)    
+    def test_pca_proj_spectral_clustering(self):
+        X, y_true = make_blobs(n_samples=300, centers=4,
+                               cluster_std=0.60, random_state=0)
+        dfX = pd.DataFrame(X)
+        #dfY = pd.DataFrame(y_true)
+        a, b = data_audit.proj_spectral_clustering(dfX, 4)
+        assert a == 0.6366971747472904
     
-    def test_wrong_distribution_of_feature_box_plot(self):
-        dfData = create_test_data()
-        dfResult = cross_correlation(dfData)
-    
-    def test_wrong_distribution_of_feature_density_plot(self):
-        dfData = create_test_data()
-        dfResult = cross_correlation(dfData)
-    
-"""
-
-#
-#
-#
-#
-#
+    def test_ica_proj_spectral_clustering(self):
+        X, y_true = make_blobs(n_samples=300, centers=4,
+                               cluster_std=0.60, random_state=0)
+        dfX = pd.DataFrame(X)
+        #dfY = pd.DataFrame(y_true)
+        a, b = data_audit.proj_spectral_clustering(dfX, 4, 'ica')
+        assert round(a, 3) == 0.612
