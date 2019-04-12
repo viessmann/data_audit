@@ -4,9 +4,9 @@ from setuptools import setup, find_packages
 setup(name='data_audit',
       version='0.1.1',
 	  project_urls={'Viessmann': 'https://www.linkedin.com/company/viessmann/', 
-                    'Source': 'https://github.com/viessmann/data_audit'}
+                    'Source': 'https://github.com/viessmann/data_audit'},
       description='Viessmann Data Audit',
-      long_description=open('readme_pypi.rst').read(,
+      long_description=open('readme_pypi.rst').read(),
       classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
