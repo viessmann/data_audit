@@ -129,8 +129,7 @@ def value_range_of_features(dfData):
     distinct values.
     """
     dictFeatures = dict()
-    lstNonNumCatDT = ["object", "datetime64[ns]", "bool", "timedelta[ns]",
-                      "category"]
+    lstNonNumCatDT = ["object", "category"]
     for j in dfData.columns:
         if(dfData.dtypes[j].name not in lstNonNumCatDT):
             #max und min

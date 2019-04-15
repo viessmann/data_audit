@@ -184,12 +184,12 @@ class TestDataAudits(object):
     def test_value_range_of_features(self):
         dfData = create_test_data()
         serResults = vda.value_range_of_features(dfData)
-        assert(serResults[0] == [0,4])
+        assert(serResults['id'] == [0,4])
 
     def test_number_of_unique_values(self):
         dfData = create_test_data()
         serResults = vda.number_of_unique_values(dfData)
-        assert(serResults[0] == 5)
+        assert(serResults['id'] == 5)
 
     def test_granularity_of_timestamp_feature(self):
         dfData = create_test_data()
@@ -214,7 +214,7 @@ class TestDataAudits(object):
         dfX = pd.DataFrame(X)
         #dfY = pd.DataFrame(y_true)
         a, b = vda.proj_kMeans(dfX, 4, False)
-        assert a == 0.6366971747472904
+        assert a == 0.6270346325358909
     
     def test_ica_proj_kMeans(self):
         X, y_true = make_blobs(n_samples=300, centers=4,
@@ -246,7 +246,7 @@ class TestDataAudits(object):
         dfX = pd.DataFrame(X)
         #dfY = pd.DataFrame(y_true)
         a, b = vda.proj_spectral_clustering(dfX, 4)
-        assert a == 0.6366971747472904
+        assert a == 0.6270346325358909
     
     def test_ica_proj_spectral_clustering(self):
         X, y_true = make_blobs(n_samples=300, centers=4,
