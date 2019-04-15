@@ -911,8 +911,11 @@ def distribution_of_feature_histogram(dfData,
                           boolSave)
     elif isinstance(dfData, pd.DataFrame):
         for j in dfData.columns:
-            histogram_barplot(dfData[j], bins, tplFigSize, intFontSize,
-                              strName, boolSave)
+            psData = dfData[j].copy()
+            psData = psData.dropna()
+            if len(psData) > 0:
+                histogram_barplot(psData, bins, tplFigSize, intFontSize,
+                                  strName, boolSave)
     else:
         raise ValueError("No correct Dateformat given")
     return
@@ -1011,19 +1014,22 @@ def density_plot(dfData, tplFigSize, intFontSize, strName, boolSave):
     lstNonNumCatDT = ["object", "datetime64[ns]", "bool", "timedelta[ns]",
                       "category"]
     if(dfData.dtypes.name not in lstNonNumCatDT):
-        fig = plt.figure(figsize = tplFigSize)
-        ax = plt.gca()
-        ax.get_xaxis().get_major_formatter().set_useOffset(False)
-        ax.get_yaxis().get_major_formatter().set_useOffset(False)
-        plt.title("Densityplot " + dfData.name)
-        plt.xlabel('value of ' + dfData.name)
-        plt.ylabel('density of values')
-        plt.grid(True)
-        plt.rcParams.update({'font.size': intFontSize})
-        sns.distplot(dfData, hist=True, kde=True, color = 'darkblue', 
-                     hist_kws={'edgecolor':'black'}, kde_kws={'linewidth': 4})
-        if boolSave == True:
-            fig.savefig(strName + "_Density_Plot_" + dfData.name + ".pdf")
+        try:
+            fig = plt.figure(figsize = tplFigSize)
+            ax = plt.gca()
+            ax.get_xaxis().get_major_formatter().set_useOffset(False)
+            ax.get_yaxis().get_major_formatter().set_useOffset(False)
+            plt.title("Densityplot " + dfData.name)
+            plt.xlabel('value of ' + dfData.name)
+            plt.ylabel('density of values')
+            plt.grid(True)
+            plt.rcParams.update({'font.size': intFontSize})
+            sns.distplot(dfData, hist=True, kde=True, color = 'darkblue', 
+                         hist_kws={'edgecolor':'black'}, kde_kws={'linewidth': 4})
+            if boolSave == True:
+                fig.savefig(strName + "_Density_Plot_" + dfData.name + ".pdf")
+        except:
+            print("failed to plot: " + dfData.name)
     return
 
 def distribution_of_feature_density_plot(dfData,
@@ -1049,10 +1055,17 @@ def distribution_of_feature_density_plot(dfData,
     Uses pandas builtin function for computing
     """
     if isinstance(dfData, pd.Series):
-        density_plot(dfData, tplFigSize, intFontSize, strName, boolSave)
+        psData = dfData.copy()
+        psData = psData.dropna()
+        if len(psData) > 0:
+            density_plot(dfData, tplFigSize, intFontSize, strName, boolSave)
     elif isinstance(dfData, pd.DataFrame):
         for j in dfData.columns:
-            density_plot(dfData[j], tplFigSize, intFontSize, strName, boolSave)
+            psData = dfData[j].copy()
+            psData = psData.dropna()
+            if len(psData) > 0:
+                density_plot(dfData[j], tplFigSize, intFontSize, strName, 
+                             boolSave)
     else:
         raise ValueError("No correct Dateformat given")
     return
