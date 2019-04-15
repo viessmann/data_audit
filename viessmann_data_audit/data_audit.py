@@ -1181,8 +1181,10 @@ def proj_kMeans(dfData, n_clusters = 2, boolPlot = False, method='pca'):
     """
     dfNum = get_numericals(dfData)
     dfNum = dfNum.dropna(axis = 1)
+    min_max_scaler = MinMaxScaler()
+    dfNum = min_max_scaler.fit_transform(dfNum)
     if method == 'pca':
-        pca = skd.PCA(2, "whiten")
+        pca = skd.PCA(2)
         dfData_pca = pca.fit_transform(dfNum)
     if method == 'ica':
         ica = skd.FastICA(2)
@@ -1247,8 +1249,10 @@ def proj_spectral_clustering(dfData, n_clusters = 2, method='pca'):
     """
     dfNum = get_numericals(dfData)
     dfNum = dfNum.dropna(axis = 1)
+    min_max_scaler = MinMaxScaler()
+    dfNum = min_max_scaler.fit_transform(dfNum)
     if method == 'pca':
-        pca = skd.PCA(2, "whiten")
+        pca = skd.PCA(2)
         dfNum = pca.fit_transform(dfNum)
     if method == 'ica':
         ica = skd.FastICA(2)

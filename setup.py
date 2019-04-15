@@ -2,12 +2,12 @@ from setuptools import setup, find_packages
 
 
 setup(name='viessmann_data_audit',
-      version='0.1.4',
+      version='0.1.5',
 	  project_urls={'Viessmann': 'https://www.linkedin.com/company/viessmann/', 
                     'Source': 'https://github.com/viessmann/viessmann_data_audit'},
       description='Viessmann Data Audit',
       long_description=open('readme_pypi.rst').read(),
-	  download_url='https://github.com/viessmann/viessmann_data_audit/archive/v0.1.4.tar.gz',
+	  download_url='https://github.com/viessmann/viessmann_data_audit/archive/v0.1.5.tar.gz',
       classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
