@@ -1,4 +1,4 @@
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 from .data_audit import data_type_mapper, data_description, value_range_of_features
 from .data_audit import classify_data_type_logic, proportion_of_missing_values
