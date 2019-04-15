@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='viessmann_data_audit',
-      version='0.1.2',
+      version='0.1.3',
 	  project_urls={'Viessmann': 'https://www.linkedin.com/company/viessmann/', 
                     'Source': 'https://github.com/viessmann/viessmann_data_audit'},
       description='Viessmann Data Audit',
