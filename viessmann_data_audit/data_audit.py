@@ -445,7 +445,8 @@ def proportion_of_outliers(dfData, dctOutliers):
     else:
         raise ValueError("No correct Dateformat given")
     if not dfDesc.empty:
-        dfDesc["Proportion_Outliers"] = dfDesc["Proportion_Outliers"]/numberOfRows
+        dfDesc["Proportion_Outliers"] = dfDesc["Proportion_Outliers"] \
+        / numberOfRows
     return dfDesc
 
 def valid_outlier_helper(dfData, dctOutliers, dctValidValues):
@@ -526,13 +527,15 @@ def proportion_valid_outliers(dfData, dctOutliers, dctValidValues):
     elif isinstance(dfData, pd.DataFrame):
         for j in dfData.columns:
             if (j in dctOutliers and j in dctValidValues):
-                intVal = valid_outlier_helper(dfData[j], dctOutliers, dctValidValues)
+                intVal = valid_outlier_helper(dfData[j], dctOutliers, 
+                                              dctValidValues)
                 dfDesc = dfDesc.append({"Name": j,
                                 "Proportion_Valid_Outliers": intVal},
                                 ignore_index=True)
     else:
         raise ValueError("No correct Dataformat given")
-    dfDesc["Proportion_Valid_Outliers"] = dfDesc["Proportion_Valid_Outliers"]/numberOfRows
+    dfDesc["Proportion_Valid_Outliers"] = dfDesc["Proportion_Valid_Outliers"] \
+    / numberOfRows
     return dfDesc
 
 def number_of_unique_values(dfData):
@@ -861,18 +864,18 @@ def histogram_barplot(serData, bins, tplFigSize, intFontSize, strName,
     ax = plt.gca()
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
     ax.get_yaxis().get_major_formatter().set_useOffset(False)
-    plt.xlabel('Wertigkeiten von ' + serData.name)
-    plt.ylabel('Häufigkeiten der Werte')
+    plt.xlabel('value of ' + serData.name)
+    plt.ylabel('frequency of values')
     plt.grid(True)
     plt.rcParams.update({'font.size': intFontSize})
     if serData.dtype.name in lstNonNumCatDT:
         serRankedData = rank_obj_data(serData)
-        plt.title("Barplot_" + serRankedData.name)
+        plt.title("Barplot " + serRankedData.name)
         serRankedData.value_counts().plot(kind = 'bar')
         if boolSave == True:
             fig.savefig(strName + "_Barplot_" + serData.name + ".pdf")
     else:
-        plt.title("Histogramm_" + serData.name)
+        plt.title("Histogram " + serData.name)
         serData.hist(bins = bins)
         if boolSave == True:
             fig.savefig(strName + "_Histogram_" + serData.name + ".pdf") 
@@ -938,9 +941,8 @@ def box_plot(dfData, tplFigSize, intFontSize, strName, boolSave):
         fig = plt.figure(figsize = tplFigSize)
         ax = plt.gca()
         ax.get_xaxis().get_major_formatter().set_useOffset(False)
-        plt.title("Boxplot_" + dfData.name)
-        #plt.xlabel('Keine Bedeutung')
-        plt.ylabel('Wertigkeiten von ' + dfData.name)
+        plt.title("Boxplot " + dfData.name)
+        plt.ylabel('value of ' + dfData.name)
         plt.grid(True)
         plt.rcParams.update({'font.size': intFontSize})
         plt.boxplot(dfData)
@@ -1013,9 +1015,9 @@ def density_plot(dfData, tplFigSize, intFontSize, strName, boolSave):
         ax = plt.gca()
         ax.get_xaxis().get_major_formatter().set_useOffset(False)
         ax.get_yaxis().get_major_formatter().set_useOffset(False)
-        plt.title("Density_Plot_" + dfData.name)
-        plt.ylabel('Wertigkeiten von ' + dfData.name)
-        plt.ylabel('Dichte der Wertigkeiten')
+        plt.title("Densityplot " + dfData.name)
+        plt.xlabel('value of ' + dfData.name)
+        plt.ylabel('density of values')
         plt.grid(True)
         plt.rcParams.update({'font.size': intFontSize})
         sns.distplot(dfData, hist=True, kde=True, color = 'darkblue', 
@@ -1098,6 +1100,8 @@ def pca(dfData, n_components = 2, whiten = False, boolPlot = False,
     if boolPlot == True:
         if n_components == 2:
             plt.scatter(dfData_pca[:, 0], dfData_pca[:, 1], alpha=0.8)
+            plt.xlabel('principal component 1')
+            plt.ylabel('principal component 2')
         else:
             print("Plotting is only implemented for 2 components")
     if boolVerbose == True:
@@ -1136,6 +1140,8 @@ def ica(dfData, n_components = 2, boolPlot = False):
     if boolPlot == True:
         if n_components == 2:
             plt.scatter(S_[:, 0], S_[:, 1], alpha=0.8)
+            plt.xlabel('independent component 1')
+            plt.ylabel('independent component 2')
         else:
             print("Plotting is only implemented for 2 components")
     
@@ -1180,6 +1186,12 @@ def proj_kMeans(dfData, n_clusters = 2, boolPlot = False, method='pca'):
                     c=y_kmeans, s=50, cmap='viridis')
         plt.scatter(centers[:, 0], centers[:, 1],
                     c='black', s=200, alpha=0.5)
+        if method == 'pca':
+            plt.xlabel('principal component 1')
+            plt.ylabel('principal component 2')
+        if method == 'ica':
+            plt.xlabel('independent component 1')
+            plt.ylabel('independent component 2')
     labels = kmeans.labels_
     intScore = metrics.silhouette_score(dfData_pca, labels, metric='euclidean')
     return intScore, labels
@@ -1237,6 +1249,12 @@ def proj_spectral_clustering(dfData, n_clusters = 2, method='pca'):
     labels = model.fit_predict(dfNum)
     plt.scatter(dfNum[:, 0], dfNum[:, 1],
                 c=labels, s=50, cmap='viridis')
+    if method == 'pca':
+        plt.xlabel('principal component 1')
+        plt.ylabel('principal component 2')
+    if method == 'ica':
+        plt.xlabel('independent component 1')
+        plt.ylabel('independent component 2')
     intScore = metrics.silhouette_score(dfNum, labels, metric='euclidean')
     return intScore, labels
     
