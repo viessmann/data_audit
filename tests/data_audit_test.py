@@ -203,10 +203,21 @@ class TestDataAudits(object):
 
     def test_convert_time_column_and_granularity_of_timestamp(self):
         dfData = create_test_data()
-        dfResults = vda\
+        lstScale = ["Y","M","W","D","h","m","s"]
+        dfResults, dfRecommendation = vda\
         .convert_time_column_and_granularity_of_timestamp(dfData, 
-                                                          ["TimeStamp"])
-        assert round(dfResults["Mean"].iloc[0], 2) == 198.01
+                                                          ["TimeStamp"], 
+                                                          lstScale)
+        assert round(dfResults["Mean"].iloc[3], 2) == 198.01
+    
+    def test_convert_time_column_and_granularity_of_timestamp2(self):
+        dfData = create_test_data()
+        lstScale = ["Y","M","W","D","h","m","s"]
+        dfResults, dfRecommendation = vda\
+        .convert_time_column_and_granularity_of_timestamp(dfData, 
+                                                          ["TimeStamp"], 
+                                                          lstScale)
+        assert dfRecommendation["Recommend granularity"].iloc[0] == "Months"
         
     def test_pca_proj_kMeans(self):
         X, y_true = make_blobs(n_samples=300, centers=4,

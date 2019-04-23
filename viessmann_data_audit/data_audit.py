@@ -711,6 +711,7 @@ def granularity_of_timestamp_helper(dfData, timeConversion):
     dfA = dfData.diff().dropna() / np.timedelta64(1, timeConversion)
     arrA = np.array(dfA)
     intMean = arrA.mean()
+    intMedian = np.median(arrA)
     intMin = arrA.min()
     intMax = arrA.max()
     if timeConversion == "Y":
@@ -731,10 +732,18 @@ def granularity_of_timestamp_helper(dfData, timeConversion):
         strTime = "Undefined"    
     dctGT = {"Name": dfData.name,
              "Minimum": intMin,
+             "Median": intMedian,
              "Mean": intMean,
              "Maximum": intMax,
              "Timescale": strTime}
     return dctGT
+
+def get_most_likely_granularity_of_timestamp(dfRes, strMoment, strColumn):
+    dfDiff = dfRes[["Timescale", strMoment]].copy()
+    dfDiff = dfDiff[dfDiff[strMoment] >= 1]
+    intMinIndex = dfDiff[strMoment].idxmin()
+    return {"Name": strColumn, 
+            "Recommend granularity": dfDiff["Timescale"].loc[intMinIndex]}
 
 def convert_time_column_and_granularity_of_timestamp(dfData,
                         lstCols,
@@ -767,7 +776,8 @@ def convert_time_column_and_granularity_of_timestamp(dfData,
     """
     # True Copy to prevent mutable operations on data set
     dfTimeData = dfData.copy(deep = True)
-    dfRes = pd.DataFrame()    
+    dfRes = pd.DataFrame()
+    dfGran = pd.DataFrame()
     for j in lstCols:
         # convert col j to datetime
         dfTimeData[j] = pd.to_datetime(dfTimeData[j])
@@ -780,7 +790,10 @@ def convert_time_column_and_granularity_of_timestamp(dfData,
         # compute time gaps
         dfRes_j = granularity_of_timestamp_feature(dfCol, timeConversion)
         dfRes = dfRes.append(dfRes_j, ignore_index=True)
-    return dfRes
+        dfGran = dfGran\
+        .append(get_most_likely_granularity_of_timestamp(dfRes_j, "Mean", j), 
+                ignore_index=True)
+    return dfRes, dfGran
 
 def granularity_of_timestamp_feature(dfData, lstTimeConversion):
     """
