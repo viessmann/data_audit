@@ -876,7 +876,7 @@ def granularity_of_timestamp_helper(dfData, timeConversion):
 
 def get_most_likely_granularity_of_timestamp(dfRes, strMoment, strColumn):
     dfDiff = dfRes[["Timescale", strMoment]].copy()
-    dfDiff = dfDiff[dfDiff[strMoment] >= 1]
+    dfDiff = dfDiff[dfDiff[strMoment] > 0.999999]
     intMinIndex = dfDiff[strMoment].idxmin()
     return {"Name": strColumn, 
             "Recommend granularity": dfDiff["Timescale"].loc[intMinIndex]}
