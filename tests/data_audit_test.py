@@ -10,6 +10,10 @@ import viessmann_data_audit as vda
 import numpy as np
 import pandas as pd
 from sklearn.datasets.samples_generator import make_blobs
+from datetime import datetime
+
+strEntityFile = 'tests/resources/entity.gz.pkl'
+strEntityFastFile = 'tests/resources/entity_fast.gz.pkl'
 
 def create_test_data():
     # Unique Numbers
@@ -266,3 +270,39 @@ class TestDataAudits(object):
         #dfY = pd.DataFrame(y_true)
         a, b = vda.proj_spectral_clustering(dfX, 4, 'ica')
         assert round(a, 3) == 0.612
+       
+    def test_aggregate_by_data_entity(self):
+        dfData = create_test_data()
+        dfData.loc[1, "TimeStamp"] = datetime(2018,12,1,8)
+        dfData.loc[3, "TimeStamp"] = datetime(2019,1,31,8)
+        dfData.loc[4, "TimeStamp"] = datetime(2019,1,31,8)
+        dctEntity = {"primary_key": "TimeStamp", 
+                 "id": {"aggregation": "take", "position": "first"}, 
+                 "nanNumbers": {"aggregation": "mean", "weight": "id"},
+                 "nonUniqueObjects": {"aggregation": "take", 
+                                      "position": "first"},
+                 "categorical": {"aggregation": "take", "position": "last"}, 
+                 "nanCategorical": {"aggregation": "assign", "value": "new"}, 
+                 "noOrderCategorical": {"aggregation": "take", "position": -1}, 
+                 "sigOutlier": {"aggregation": "median"}}
+        dfAgg = vda.aggregate_by_data_entity(dfData, dctEntity)
+        dfTest = pd.read_pickle(strEntityFile, compression='gzip')
+        assert dfAgg.equals(dfTest)
+    
+    def test_aggregate_by_data_entity_fast(self):
+        dfData = create_test_data()
+        dfData.loc[1, "TimeStamp"] = datetime(2018,12,1,8)
+        dfData.loc[3, "TimeStamp"] = datetime(2019,1,31,8)
+        dfData.loc[4, "TimeStamp"] = datetime(2019,1,31,8)
+        dctEntity = {"primary_key": "TimeStamp", 
+                 "id": {"aggregation": "take", "position": "first"}, 
+                 "nanNumbers": {"aggregation": "mean", "weight": "id"},
+                 "nonUniqueObjects": {"aggregation": "take", 
+                                      "position": "first"},
+                 "categorical": {"aggregation": "take", "position": "last"}, 
+                 "nanCategorical": {"aggregation": "assign", "value": "new"}, 
+                 "noOrderCategorical": {"aggregation": "take", "position": -1}, 
+                 "sigOutlier": {"aggregation": "median"}}
+        dfAgg = vda.aggregate_by_data_entity(dfData, dctEntity, True)
+        dfTest = pd.read_pickle(strEntityFastFile, compression='gzip')
+        assert dfAgg.equals(dfTest)

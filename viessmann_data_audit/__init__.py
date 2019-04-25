@@ -1,4 +1,4 @@
-__version__ = '0.1.6'
+__version__ = '0.1.7'
 
 from .data_audit import data_type_mapper, data_description, value_range_of_features
 from .data_audit import classify_data_type_logic, proportion_of_missing_values
@@ -16,4 +16,4 @@ from .data_audit import histogram_barplot, distribution_of_feature_histogram
 from .data_audit import box_plot, distribution_of_feature_box_plot
 from .data_audit import density_plot, distribution_of_feature_density_plot
 from .data_audit import pca, ica, proj_kMeans, kMeans, spectral_clustering
-from .data_audit import proj_spectral_clustering
+from .data_audit import proj_spectral_clustering, aggregate_by_data_entity

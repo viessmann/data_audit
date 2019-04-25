@@ -16,6 +16,142 @@ from sklearn import metrics
 from sklearn.preprocessing import MinMaxScaler
 
 
+def aggregate_entity_column_fast(psInput, dctEntity):
+    strColumn = psInput.name
+    if strColumn in list(dctEntity.keys()):
+        strAgg = dctEntity[strColumn]["aggregation"]
+        # additional aggregation functions
+        if strAgg == "assign" or strAgg == "take":
+            if strAgg == "assign":
+                return dctEntity[strColumn]["value"]
+            if strAgg == "take":
+                strPos = str(dctEntity[strColumn]["position"])
+                if strPos == "first":
+                    return psInput.iloc[0]
+                if strPos == "last":
+                    return psInput.iloc[-1]
+                intPos = int(dctEntity[strColumn]["position"])
+                return psInput.iloc[intPos]
+        else:
+            # execute each from pandas supported aggregation function
+            if strAgg[-1] != ')':
+                strEnd = '()'
+            else:
+                strEnd = ''
+            return eval('psInput.' + strAgg + strEnd)
+
+
+def aggregate_entity_fast(dfGroup, dctEntity):
+    return (dfGroup.apply(lambda x: aggregate_entity_column_fast(x, 
+                                                        dctEntity))).dropna()
+
+
+def aggregate_entity_column(dfGroup, strColumn, dctEntity):
+    psColumn = dfGroup[strColumn].copy()
+    strAgg = dctEntity[strColumn]["aggregation"]
+    if (strAgg == "mean") or (strAgg == "mean()"):
+        if "weight" in list(dctEntity[strColumn].keys()):
+            # weighted mean
+            psWeight = dfGroup[dctEntity[strColumn]["weight"]].copy()
+            psWeight = psWeight / psWeight.sum()
+            psColumn = psColumn * psWeight * len(psWeight)
+        return psColumn.mean()
+    if (strAgg == "median") or (strAgg == "median()"):
+        # weighted median
+        if "weight" in list(dctEntity[strColumn].keys()):
+            strWeight = dctEntity[strColumn]["weight"]
+            dfSort = dfGroup[[strColumn, strWeight]].copy()
+            dfSort = dfSort.sort_values(strColumn)
+            psCumsum = dfSort[strWeight].cumsum()
+            fltCutoff = dfSort[strWeight].sum() / 2
+            return dfSort[psCumsum >= fltCutoff][strColumn].iloc[0]
+        else:
+            # unweighted median
+            return psColumn.median()
+    # additional aggregation functions
+    if strAgg == "assign" or strAgg == "take":
+        if strAgg == "assign":
+            return dctEntity[strColumn]["value"]
+        if strAgg == "take":
+            strPos = str(dctEntity[strColumn]["position"])
+            if strPos == "first":
+                return psColumn.iloc[0]
+            if strPos == "last":
+                return psColumn.iloc[-1]
+            return psColumn.iloc[dctEntity[strColumn]["position"]]
+    else:
+        # execute each from pandas supported aggregation function
+        if strAgg[-1] != ')':
+            strEnd = '()'
+        else:
+            strEnd = ''
+        return eval('psColumn.' + strAgg + strEnd)
+
+
+def aggregate_entity(dfGroup, dctEntity):
+    dctAgg = {}
+    for strColumn in list(dfGroup.columns):
+        if strColumn in list(dctEntity.keys()):
+            dctAgg[strColumn] = aggregate_entity_column(dfGroup, strColumn, 
+                                                        dctEntity)
+    return pd.Series(dctAgg)
+
+
+def aggregate_by_data_entity(dfData, dctEntity, boolFast=False):
+    """
+    Parameters
+    #---------
+    dfData (Pandas.DataFrame):  data that should be aggregated
+    dctEntity (dict):   contains primary key (for groupby) and the aggregation 
+                        information for each column (see description for 
+                        structure)
+    boolFast (bool):    controls fast mode (default: False), fast mode does not 
+                        support weighted mean and weighted median and will 
+                        ignore weights in dctEntity. In some cases the fast 
+                        mode can be slower than the normal mode (many rows und 
+                        few columns).
+    
+    Returns
+    #------
+    dfAgg (Pandas.DataFrame): aggregated data
+    
+    Description
+    #----------
+    This function aggregates a dataframe by using different aggregations for 
+    each column. The aggregation rules are defined in dctEntity. This 
+    dictionary must name the column that should be used as primary key (you can 
+    use a list of column names if you want to group by two or more columns). 
+    Each column that should be aggregated, needs an entry in dctEntity. Each 
+    column that is not defined in dctEntity will not be aggregated and therfore 
+    not returned.
+    
+    You can use each from pandas supported aggregation function like mean and 
+    quantile. In addition you can assign a new value or take one from each 
+    group.
+    
+    An example for a dataframe containing the columns column_1 to column_9:
+    
+    dctEntity = {"primary_key": "column_1", 
+                 "column_2": {"aggregation": "assign", "value": "new value"}, 
+                 "column_3": {"aggregation": "take", "position": "first"}, 
+                 "column_4": {"aggregation": "take", "position": "last"}, 
+                 "column_5": {"aggregation": "take", "position": 2}, 
+                 "column_6": {"aggregation": "sum"}, 
+                 "column_7": {"aggregation": "mean", "weight": "column_6"}, 
+                 "column_8": {"aggregation": "median", "weight": "column_2"}, 
+                 "column_9": {"aggregation": "quantile(0.75)"}}
+    """
+    
+    if boolFast == False:
+        dfAgg = dfData.groupby(dctEntity["primary_key"])\
+        .apply(lambda x: aggregate_entity(x, dctEntity))
+    else:
+        dfAgg = dfData.groupby(dctEntity["primary_key"])\
+        .apply(lambda x: aggregate_entity_fast(x, dctEntity))
+    dfAgg = dfAgg.reset_index()
+    return dfAgg
+
+
 def data_type_mapper(strDT):
     """
     Parameters
